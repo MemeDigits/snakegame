@@ -1,83 +1,95 @@
-const startBtn = document.getElementById('start-btn');
-startBtn.addEventListener('click', startGame);
+// Define variables
+const canvas = document.getElementById("game-canvas");
+const ctx = canvas.getContext("2d");
+const blockSize = 10;
+let snake = [];
+let food = {};
+let direction = "right";
+let score = 0;
+let gameLoop;
 
-let isGameActive = false;
-let currentPlayer = '69';
-
-const gameBoard = document.getElementById('game-board');
-const winningCombinations = [
-	[0, 1, 2],
-	[3, 4, 5],
-	[6, 7, 8],
-	[0, 3, 6],
-	[1, 4, 7],
-	[2, 5, 8],
-	[0, 4, 8],
-	[2, 4, 6]
-];
-
-let boardState = ['', '', '', '', '', '', '', '', ''];
-
-function startGame() {
-	isGameActive = true;
-	currentPlayer = '69';
-	boardState = ['', '', '', '', '', '', '', '', ''];
-	gameBoard.innerHTML = '';
-	renderBoard();
+// Create the snake
+function createSnake() {
+  let length = 5;
+  for (let i = length - 1; i >= 0; i--) {
+    snake.push({ x: i, y: 0 });
+  }
 }
 
-function renderBoard() {
-	for (let i = 0; i < 9; i++) {
-		const box = document.createElement('div');
-		box.classList.add('box');
-		box.setAttribute('data-index', i);
-		box.addEventListener('click', handleBoxClick);
-		box.innerText = boardState[i] === '' ? '' : boardState[i] === '69' ? '69' : '420';
-		if (boardState[i] === '69') {
-			box.classList.add('player-69');
-		} else if (boardState[i] === '420') {
-			box.classList.add('player-420');
-		}
-		gameBoard.appendChild(box);
-	}
+// Create the food
+function createFood() {
+  food.x = Math.floor(Math.random() * (canvas.width / blockSize)) * blockSize;
+  food.y = Math.floor(Math.random() * (canvas.height / blockSize)) * blockSize;
 }
 
-function handleBoxClick(event) {
-	const clickedBox = event.target;
-	const clickedBoxIndex = clickedBox.getAttribute('data-index');
-	if (boardState[clickedBoxIndex] !== '' || !isGameActive) {
-		return;
-	}
-	handlePlayerMove(clickedBox, clickedBoxIndex);
-	handleResult();
+// Draw the snake and the food
+function draw() {
+  // Clear the canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw the snake
+  ctx.fillStyle = "green";
+  for (let i = 0; i < snake.length; i++) {
+    ctx.fillRect(
+      snake[i].x * blockSize,
+      snake[i].y * blockSize,
+      blockSize,
+      blockSize
+    );
+  }
+
+  // Draw the food
+  ctx.fillStyle = "red";
+  ctx.fillRect(food.x, food.y, blockSize, blockSize);
+
+  // Draw the score
+  ctx.fillStyle = "black";
+  ctx.font = "20px Arial";
+  ctx.fillText(`Score: ${score}`, 10, 30);
 }
 
-function handlePlayerMove(clickedBox, clickedBoxIndex) {
-	boardState[clickedBoxIndex] = currentPlayer;
-	clickedBox.innerText = currentPlayer;
-	if (currentPlayer === '69') {
-		clickedBox.classList.add('player-69');
-		currentPlayer = '420';
-	} else {
-		clickedBox.classList.add('player-420');
-		currentPlayer = '69';
-	}
+// Move the snake
+function move() {
+  let head = { x: snake[0].x, y: snake[0].y };
+
+  if (direction === "right") {
+    head.x++;
+  } else if (direction === "left") {
+    head.x--;
+  } else if (direction === "up") {
+    head.y--;
+  } else if (direction === "down") {
+    head.y++;
+  }
+
+  // Check if the snake hit the wall or itself
+  if (
+    head.x < 0 ||
+    head.x >= canvas.width / blockSize ||
+    head.y < 0 ||
+    head.y >= canvas.height / blockSize ||
+    checkCollision(head, snake)
+  ) {
+    gameOver();
+    return;
+  }
+
+  // Check if the snake ate the food
+  if (checkCollision(head, [food])) {
+    score++;
+    createFood();
+  } else {
+    snake.pop();
+  }
+
+  snake.unshift(head);
 }
 
-function handleResult() {
-	for (let i = 0; i < winningCombinations.length; i++) {
-		const [a, b, c] = winningCombinations[i];
-		if (boardState[a] === '' || boardState[b] === '' || boardState[c] === '') {
-			continue;
-		}
-		if (boardState[a] === boardState[b] && boardState[b] === boardState[c]) {
-			isGameActive = false;
-			alert(`Player ${boardState[a]} has won!`);
-			break;
-		}
-	}
-	if (!boardState.includes('') && isGameActive) {
-		isGameActive = false;
-		alert('Tie!');
-	}
-}
+// Check if there's a collision between two objects
+function checkCollision(a, b) {
+  for (let i = 0; i < b.length; i++) {
+    if (a.x === b[i].x && a.y === b[i].y) {
+      return true;
+    }
+  }
+  return
