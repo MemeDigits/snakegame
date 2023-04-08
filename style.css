@@ -1,0 +1,48 @@
+body {
+  background-color: #000;
+}
+
+.board {
+  display: flex;
+  flex-wrap: wrap;
+  width: 330px;
+  margin: 50px auto;
+  border: 3px solid #fff;
+  border-radius: 10px;
+}
+
+.cell {
+  box-sizing: border-box;
+  width: 100px;
+  height: 100px;
+  font-size: 60px;
+  font-weight: bold;
+  color: #fff;
+  text-align: center;
+  line-height: 100px;
+  cursor: pointer;
+}
+
+.cell:nth-child(3n+1) {
+  border-right: 3px solid #fff;
+}
+
+.cell:nth-child(-n+3) {
+  border-bottom: 3px solid #fff;
+}
+
+.cell[data-cell="69"] {
+  color: #0FF;
+}
+
+.cell[data-cell="420"] {
+  color: #0F0;
+}
+
+.message {
+  text-align: center;
+  font-size: 48px;
+  font-weight: bold;
+  color: #fff;
+  margin-top: 50px;
+}
